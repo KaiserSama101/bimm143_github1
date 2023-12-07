@@ -9,4 +9,4 @@ My classwork for F23 in [BIMM143](https://bioboot.github.io/bimm143_F23/) at UC 
 - Class11 [Structural Bioinformatics (pt2 AlphaFold)](https://github.com/KaiserSama101/bimm143_github1/blob/main/class11-11.7-.pdf)
 - Class12 [Genome informatics and high throughput sequencing](https://github.com/KaiserSama101/bimm143_github1/blob/main/class12/class12ec.pdf)
 - Class13[Transcriptomics, RNA-Seq analysis, and the interpretation of gene lists](https://github.com/KaiserSama101/bimm143_github1/blob/main/class13/class13.pdf)
-- 
+- Class14[RNA-Seq mini project](https://github.com/KaiserSama101/bimm143_github1/blob/main/class14/class14.pdf)
