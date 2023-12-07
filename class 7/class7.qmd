@@ -1,0 +1,175 @@
+---
+title: "Class 07: Machine Learning 1"
+author: "Kai Zhao(PID: A17599942)"
+format: pdf
+---
+
+# Clustering
+
+we will start today's lab with clustering methods, in particular so-called K-means. The main function for this in R is `kmeans()`
+
+Let's try it on some made up data where we know that what the answer should be.
+
+```{r}
+x <- rnorm(10000, mean=3)
+hist(x)
+```
+
+60 points
+```{r}
+tmp <- c(rnorm(30, mean=3), rnorm(30,mean=-3))
+x <- cbind(x=tmp, y=rev(tmp))
+x
+```
+
+We can pass this to the base R `plot()` function for a quick
+
+```{r}
+plot(x)
+```
+
+
+```{r}
+k <- kmeans(x, centers=2, nstart=20)
+k
+```
+
+>Q1. How many points are in each cluster
+
+```{r}
+k$size
+```
+>Q2. Cluster membership?
+
+```{r}
+k$cluster
+```
+
+>Q3. Cluster centers?
+
+```{r}
+k$centers
+```
+
+>Q4 Plot my clustering results
+
+```{r}
+plot(x, col= k$cluster, pch=16)
+```
+
+>Q5 Cluster the data again with kmean() into 4 groups and plot the results.
+
+```{r}
+k4 <- kmeans(x, center=4, nstart=20)
+plot(x, col=k4$cluster, pch=16)
+```
+
+K-means is very popular mostly because it is fast and relatively straightforward to run and understand. It has a big limitation in that you need to tell it how many groups(k, or centers) you want.
+
+# hierarchical clustering
+
+The main function in base R is called `hclust()`. You have to pass it in a "distance matrix" not just your input data.
+
+You can generate a distance matrix with the `dist()` function.
+
+```{r}
+hc <- hclust(dist(x))
+hc
+```
+
+
+```{r}
+plot(hc)
+```
+
+To find the clusters (cluster membership vector) from a `hclust()` result we can "cut" the tree at a certain height taht we like. For this we use the `cutree()` function.
+
+```{r}
+plot(hc)
+abline(h=8,col="red")
+grps <- cutree(hc, h=8)
+```
+
+```{r}
+table(grps)
+```
+
+> Q6 Plot our hclust results.
+
+```{r}
+plot(x, col=grps, pch=16)
+```
+# Principal Component Analysis
+
+# PCA of UK food data
+
+Read data showing the consumption in grams(per person, per week) of 17 different types of food-stuff measured and averaged in the four countries of the United Kingdom.
+
+Let's see how PCA can help us but first we can try conventional analysis.
+
+```{r}
+url <- "https://tinyurl.com/UK-foods"
+x <- read.csv(url)
+x
+```
+
+I need to fix that first column...
+```{r}
+rownames(x) <- x[,1]
+x <- x[,1]
+head(x)
+```
+
+```{r}
+url <- "https://tinyurl.com/UK-foods"
+x <- read.csv(url, row.names=1)
+```
+
+```{r}
+cols <- rainbow(nrow(x))
+barplot(as.matrix(x), col=cols)
+```
+```{r}
+barplot(as.matrix(x), col=cols, beside=T)
+```
+```{r}
+pairs(x, col=rainbow(17), pch=16, cex=2)
+```
+
+## Principal Component Analysis (PCA)
+
+PCA can help us make sense of these types of datasets. Ket's see how it works.
+
+The main function in "base" R is called `prcomp()`. In this case we want to first take the transpose `t()` of our input `x` so the columns are the food types and the countries are the rows.
+
+```{r}
+head(t(x))
+```
+```{r}
+pca <- prcomp(t(x))
+summary(pca)
+```
+```{r}
+pca$x
+```
+
+```{r}
+plot( pca$x[,1], pca$x[,2], col=c("orange", "red", "blue", "darkgreen"), pch=16)
+```
+The "loadings' tell us how much the origional variables (in our case the food) contribute to the new variables i.e. the PCs.
+
+
+```{r}
+head(pca$rotation)
+## Lets focus on PC1 as it accounts for > 90% of variance 
+par(mar=c(10, 3, 0.35, 0))
+barplot( pca$rotation[,1], las=2 )
+
+```
+
+
+Stop at Q9
+
+
+
+

@@ -1,0 +1,54 @@
+---
+title: 'Class 07 : Machine Learning 2'
+author: 'Kai Zhao (PID: A17599942)'
+date: "2023-10-24"
+output: pdf
+---
+
+# Clustering
+
+we will start today's lab with clustering methods, in particular so-called K-means. The main function for this in R is `kmeans()`
+
+Let's try it on some made up data where we know that what the answer should be.
+
+```{r}
+x <- rnorm(10000, mean=3)
+hist(x)
+```
+
+60 points
+
+```{r}
+tmp <- c(rnorm(30, mean=3), rnorm(30,mean=-3))
+x <- cbind(x=tmp, y=rev(tmp))
+x
+```
+
+We can pass this to the base R `plot()` function for a quick
+
+```{r}
+plot(x)
+```
+
+```{r}
+k <- kmeans(x, centers=2, nstart=20)
+k
+```
+
+>Q1. How many points are in each cluster
+
+```{r}
+k$size
+```
+>Q2. Cluster membership?
+
+```{r}
+k$cluster
+```
+
+>Q3. Cluster centers?
+
+```{r}
+k$centers
+```
+
