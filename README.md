@@ -6,5 +6,5 @@ My classwork for F23 in [BIMM143](https://bioboot.github.io/bimm143_F23/) at UC 
 - Class8 [Unsupervised learning mini-project](https://github.com/KaiserSama101/bimm143_github1/blob/main/class08_miniproject/class08.pdf)
 - Class9 [Halloween Candy Mini-Project](https://github.com/KaiserSama101/bimm143_github1/blob/main/class9Helloween/class9helloween1.pdf)
 - Class10 [Structural Bioinformatics (pt1)](https://github.com/KaiserSama101/bimm143_github1/blob/main/class10/class10.pdf)
-- Class11 [Structural Bioinformatics (pt2 AlphaFold)]
+- Class11 [Structural Bioinformatics (pt2 AlphaFold)](https://github.com/KaiserSama101/bimm143_github1/blob/main/class11-11.7-.pdf)
 - Class12 [Genome informatics and high throughput sequencing](https://github.com/KaiserSama101/bimm143_github1/blob/main/class12/class12ec.pdf)
