@@ -1,0 +1,244 @@
+---
+title: "class14"
+author: "Kai Zhao (PID:A17599942)"
+format: pdf
+---
+
+#Data Import
+
+Read our counts and metadata CSV files
+```{r}
+library(DESeq2)
+```
+
+```{r}
+counts <- read.csv("GSE37704_featurecounts.csv", row.names= 1)
+metadata <- read.csv("GSE37704_metadata.csv")
+```
+How many genes?
+
+```{r}
+nrow(counts)
+```
+
+```{r}
+head(counts, 3)
+```
+
+How many control and knock-down conditions?
+
+```{r}
+table(metadata$condition)
+```
+
+>Q. Complete the code below to remove the troublesome first column from countData
+
+```{r}
+head(counts)
+```
+
+```{r}
+counts <- counts [ , -1]
+head (counts, 3)
+```
+
+
+>Q.Complete the code below to filter countData to exclude genes (i.e. rows) where we have 0 read count across all samples (i.e. columns).
+
+```{r}
+to.rm.inds <- rowSums(counts) == 0
+counts <- counts[!to.rm.inds,]
+```
+
+>Q. How many genes do we have left?
+
+```{r}
+nrow(counts)
+```
+
+#DESeq setup and analysis
+
+```{r}
+#1 Warning:false
+dds <- DESeqDataSetFromMatrix(countData= counts,
+                             colData= metadata,
+                             design= ~condition)
+```
+
+
+Run DESeq and get results
+```{r}
+dds <- DESeq(dds)
+res <- results(dds)
+```
+
+Quick peak
+```{r}
+head(res)
+```
+#Add annotation data
+
+```{r}
+library(AnnotationDbi)
+```
+
+#Result visualization
+
+```{r}
+plot( res$log2FoldChange, -log(res$padj) )
+```
+
+Add some color to this ….
+
+>Q. Improve this plot by completing the below code, which adds color and axis labels
+
+```{r}
+mycols <- rep("gray", nrow(res))
+mycols[res$log2FoldChange > 2] <- "red"
+mycols[ res$log2FoldChange< 2] <- "red"
+mycols[res$padj > 0.05]<- "gray"
+```
+
+```{r}
+plot(res$log2FoldChange, -log10(res$padj), col=mycols,
+     xlab="Log2(Fold-Change)", 
+     ylab="Minus Log10(P-value)")
+abline(v=c(-2,2))
+abline(h=-log10(0.05))
+```
+
+```{r}
+# Make a color vector for all genes
+mycols <- rep("gray", nrow(res))
+
+# Color red the genes with absolute fold change above 2
+mycols[abs(res$log2FoldChange) > 2] <- "red"
+
+# Color blue those with adjusted p-value less than 0.01
+# and absolute fold change more than 2
+inds <- (res$padj < 0.01) & (abs(res$log2FoldChange) > 2)
+mycols[inds] <- "blue"
+
+# Plot
+plot(res$log2FoldChange, -log10(res$padj), col=mycols, xlab="Log2(FoldChange)", ylab="-Log10(P-value)")
+```
+#Add annotation data
+
+```{r}
+library("org.Hs.eg.db")
+library("AnnotationDbi")
+```
+
+```{r}
+columns(org.Hs.eg.db)
+
+res$symbol= mapIds(org.Hs.eg.db,
+                   keys=row.names(res),
+                   keytype="ENSEMBL",
+                   column="SYMBOL",
+                   multiVals = "first")
+
+
+res$entrez = mapIds(org.Hs.eg.db,
+                    keys=row.names(res),
+                    keytype="ENSEMBL",
+                    column="ENTREZID",
+                    multiVals="first")
+
+head(res)
+```
+
+#Save results
+
+```{r}
+write.csv(res, file="myresults.rsv")
+```
+
+#Gene Set enrichment
+
+I will use KEGG and GO…
+
+```{r}
+#1 message false
+library(gage)
+library(gageData)
+library(pathview)
+
+data(kegg.sets.hs)
+```
+
+```{r}
+foldchanges = res$log2FoldChange
+names(foldchanges) = res$entrez
+head(foldchanges)
+# Get the results
+keggres = gage(foldchanges, gsets=kegg.sets.hs)
+attributes(keggres)
+# Look at the first few down (less) pathways
+head(keggres$less)
+pathview(gene.data=foldchanges, pathway.id="hsa04110")
+# A different PDF based output of the same data
+pathview(gene.data=foldchanges, pathway.id="hsa04110", kegg.native=FALSE)
+## Focus on top 5 upregulated pathways here for demo purposes only
+keggrespathways <- rownames(keggres$greater)[1:5]
+
+# Extract the 8 character long IDs part of each string
+keggresids = substr(keggrespathways, start=1, stop=8)
+keggresids
+pathview(gene.data=foldchanges, pathway.id=keggresids, species="hsa")
+```
+
+Make my input vector
+
+The top two here (hsa04110, and hsa03030) appear to be the main sets picked out. I will now use 'pathview' to pull these pathways and color up my genes that intersect with these tow pathways
+
+And insert into my report here:
+
+```{r echo=FALSE, out.width="100"}
+knitr::include_graphics("hematopoietic_cell_lineage.png",error = FALSE)
+
+knitr::include_graphics("jak-stat_signaling_pathway.png",error = FALSE)
+
+knitr::include_graphics("lysosome.png",error = FALSE)
+
+knitr::include_graphics("olfactory_transduction.png",error = FALSE)
+
+knitr::include_graphics("steroid_hormone_biosynthesis.png",error = FALSE)
+
+
+knitr::include_graphics("cell_cycle.png",error = FALSE)
+```
+
+#Go: Gene Ontology
+
+We can do the same style of analysis with Go instead of KEGG here.
+
+```{r}
+data(go.sets.hs)
+data(go.subs.hs)
+
+# Focus on Biological Process subset of GO
+gobpsets = go.sets.hs[go.subs.hs$BP]
+
+gobpres = gage(foldchanges, gsets=gobpsets, same.dir=TRUE)
+
+lapply(gobpres, head)
+```
+
+#Reactome Analysis
+
+```{r}
+sig_genes <- res[res$padj <= 0.05 & !is.na(res$padj), "symbol"]
+print(paste("Total number of significant genes:", length(sig_genes)))
+```
+
+```{r}
+write.table(sig_genes, file="significant_genes.txt", row.names=FALSE, col.names=FALSE, quote=FALSE)
+```
+
+>Q: What pathway has the most significant “Entities p-value”? Do the most significant pathways listed match your previous KEGG results? What factors could cause differences between the two methods?
+
+Now upload this here < https://reactome.org/PathwayBrowser/#TOOL=AT
+
+The pathway with the most significant "Entities p-value" is the "Cell Cycle, Mitotic" pathway, which has a p-value of 5.28E-4
+And Cell Cycle 6.22E-4.
